@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    style="@style/CustomRelativeLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:id="@+id/logo"
+        style="@style/CustomLogoImageView"
+        android:contentDescription="@string/app_name"/>
+
+    <TextView
+        android:id="@+id/profile"
+        style="@style/CustomStatusTextView"
+        android:layout_below="@id/logo"
+        tools:text="@string/app_name"/>
+
+    <LinearLayout
+        android:id="@+id/sign_out_and_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/newPost"
+            style="?android:attr/button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="New Post"
+            android:theme="@style/ThemeOverlay.MyDarkButton"/>
+
+        <Button
+            android:id="@+id/viewpost"
+            style="?android:attr/button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="View Post"
+            android:theme="@style/ThemeOverlay.MyDarkButton"/>
+    </LinearLayout>
+</RelativeLayout>

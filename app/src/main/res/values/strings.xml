@@ -3,16 +3,16 @@
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>
     <string name="label_facebook_login">Firebase + Facebook Login</string>
-    <string name="label_twitter_login">Firebase + Twitter Login</string>
-    <string name="label_emailpassword">Email/Password Authentication</string>
-    <string name="label_anonymous_auth">Anonymous Authentication</string>
+     <string name="label_emailpassword">Email/Password Authentication</string>
     <string name="label_phone_auth">Phone Authentication</string>
     <string name="label_manage_user">Manage User</string>
+    <string name="new_post_activity">New Post</string>
+    <string name="view_post">View Post</string>
+    <string name="welcome">My Screen</string>
 
     <string name="sign_in">Sign In</string>
     <string name="create_account">Create Account</string>
     <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect</string>
     <string name="loading">Loading…</string>
     <string name="signed_out">Signed Out</string>
 
@@ -22,10 +22,7 @@
     <string name="hint_photo">Photo URL</string>
 
     <string name="logout">Logout?</string>
-    <string name="anonymous_signin">Anonymous Sign In</string>
-    <string name="account_link">Account Linking</string>
-    <string name="account_link_btn">Link Account</string>
-    <string name="title_provider">User\'s provider</string>
+     <string name="title_provider">User\'s provider</string>
     <string name="title_profile">User\'s profile</string>
     <string name="title_update_profile">Update user\'s profile</string>
     <string name="title_update_email">Update user\'s email</string>
@@ -44,4 +41,13 @@
     <string name="status_sign_in_failed">Sign-in failed</string>
     <string name="instant_validation">(instant validation)</string>
     <string name="firebase_status_fmt">Firebase User: %s</string>
+    <string name="required">Required</string>
+    <string name="menu_logout">Log out</string>
+    <string name="hint_title">Title</string>
+    <string name="hint_body">body</string>
+    <string-array name="headings">
+        <item>Recent</item>
+        <item>My Posts</item>
+        <item>My Top Posts</item>
+    </string-array>
 </resources>

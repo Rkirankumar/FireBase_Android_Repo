@@ -35,6 +35,16 @@
         <activity
             android:name=".PhoneAuthActivity"
             android:label="@string/label_phone_auth" />
+        <activity
+            android:name=".WelcomeActivity"
+            android:label="@string/welcome"/>
+        <activity
+            android:name=".ViewPostActivity"
+            android:label="@string/view_post"/>
+        <activity
+            android:name=".NewPostActivity"
+            android:label="@string/new_post_activity"/>
+
     </application>
 
 </manifest>

@@ -1,6 +1,7 @@
 package com.androidfirebase;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -22,6 +23,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -186,28 +189,22 @@ public class EmailPasswordActivity extends BaseActivity implements View.OnClickL
         }
     }
 
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            if (user.getPhotoUrl() != null) {
-                new DownloadImageTask().execute(user.getPhotoUrl().toString());
-            }
-            mTextViewProfile.setText("DisplayName: " + user.getDisplayName());
-            mTextViewProfile.append("\n\n");
-            mTextViewProfile.append("Email: " + user.getEmail());
-            mTextViewProfile.append("\n\n");
-            mTextViewProfile.append("Firebase ID: " + user.getUid());
-            mTextViewProfile.append("\n\n");
-            mTextViewProfile.append("Email Verification: " + user.isEmailVerified());
+    private void updateUI(FirebaseUser firebaseUser) {
+        if (firebaseUser != null) {
+            if (firebaseUser != null) {
 
-            if (user.isEmailVerified()) {
-                findViewById(R.id.verify_button).setVisibility(View.GONE);
-            } else {
-                findViewById(R.id.verify_button).setVisibility(View.VISIBLE);
-            }
+                String email = firebaseUser.getEmail();
+                String username = email;
+                if (email != null && email.contains("@")) {
+                    username = email.split("@")[0];
+                }
+                User user = new User(username, email);
+                DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+                mDatabase.child("users").child(firebaseUser.getUid()).setValue(user);
 
-            findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
-            findViewById(R.id.email_password_fields).setVisibility(View.GONE);
-            findViewById(R.id.signout_zone).setVisibility(View.VISIBLE);
+                startActivity(new Intent(this, WelcomeActivity.class));
+                finish();
+            }
         } else {
             mTextViewProfile.setText(null);
 
@@ -218,25 +215,5 @@ public class EmailPasswordActivity extends BaseActivity implements View.OnClickL
         hideProgressDialog();
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-            Bitmap mIcon = null;
-            try {
-                InputStream in = new URL(urls[0]).openStream();
-                mIcon = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return mIcon;
-        }
 
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            if (result != null) {
-                mImageView.getLayoutParams().width = (getResources().getDisplayMetrics().widthPixels / 100) * 24;
-                mImageView.setImageBitmap(result);
-            }
-        }
-    }
 }

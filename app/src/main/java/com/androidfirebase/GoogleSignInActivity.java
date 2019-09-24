@@ -1,20 +1,16 @@
 package com.androidfirebase;
 
 
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -23,8 +19,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -32,11 +26,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.InputStream;
-import java.net.URL;
-
-public class GoogleSignInActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
+public class GoogleSignInActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = "GoogleSignInActivity";
     private static final int RC_SIGN_IN = 9001;
     private FirebaseAuth mAuth;
@@ -57,8 +50,6 @@ public class GoogleSignInActivity extends BaseActivity implements GoogleApiClien
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setOnClickListener(this);
 
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -142,83 +133,26 @@ public class GoogleSignInActivity extends BaseActivity implements GoogleApiClien
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    private void signOut() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage(R.string.logout);
-        alert.setCancelable(false);
-        alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Firebase sign out
-                mAuth.signOut();
-                // Google sign out
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                        new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(@NonNull Status status) {
-                                updateUI(null);
-                            }
-                        }
-                );
-            }
-        });
-        alert.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alert.show();
-    }
 
-    private void revokeAccess() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage(R.string.logout);
-        alert.setCancelable(false);
-        alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Firebase sign out
-                mAuth.signOut();
-                // Google revoke access
-                Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-                        new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(@NonNull Status status) {
-                                updateUI(null);
-                            }
-                        }
-                );
-            }
-        });
-        alert.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alert.show();
-    }
+    private void updateUI(FirebaseUser firebaseUser) {
+        if (firebaseUser != null) {
 
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            if (user.getPhotoUrl() != null) {
-                new DownloadImageTask().execute(user.getPhotoUrl().toString());
+            String email = firebaseUser.getEmail();
+            String username = email;
+            if (email != null && email.contains("@")) {
+                username = email.split("@")[0];
             }
-            mTextViewProfile.setText("DisplayName: " + user.getDisplayName());
-            mTextViewProfile.append("\n\n");
-            mTextViewProfile.append("Email: " + user.getEmail());
-            mTextViewProfile.append("\n\n");
-            mTextViewProfile.append("Firebase ID: " + user.getUid());
+            User user = new User(username, email);
+            DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+            mDatabase.child("users").child(firebaseUser.getUid()).setValue(user);
 
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
+            startActivity(new Intent(this, WelcomeActivity.class));
+            finish();
         } else {
             mImageView.getLayoutParams().width = (getResources().getDisplayMetrics().widthPixels / 100) * 64;
             mImageView.setImageResource(R.mipmap.authentication);
             mTextViewProfile.setText(null);
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
         }
         hideProgressDialog();
     }
@@ -235,33 +169,9 @@ public class GoogleSignInActivity extends BaseActivity implements GoogleApiClien
             case R.id.sign_in_button:
                 signIn();
                 break;
-            case R.id.sign_out_button:
-                signOut();
-                break;
-            case R.id.disconnect_button:
-                revokeAccess();
-                break;
+
         }
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-            Bitmap mIcon = null;
-            try {
-                InputStream in = new URL(urls[0]).openStream();
-                mIcon = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return mIcon;
-        }
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            if (result != null) {
-                mImageView.getLayoutParams().width = (getResources().getDisplayMetrics().widthPixels / 100) * 24;
-                mImageView.setImageBitmap(result);
-            }
-        }
-    }
+
 }
